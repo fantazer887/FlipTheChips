@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -26,22 +26,23 @@ namespace Переверни_фишки
         private void start_game_button_Click(object sender, EventArgs e) // метод для старта игры при нажатии на кнопку
         {
             if (comboBox1.Text == "" || comboBox2.Text == "") { MessageBox.Show("Выберите цвета сторон фишек!", "Ошибка"); timer1.Enabled = false; }
-            else if (comboBox1.Text == comboBox2.Text && comboBox1.Text != "") { MessageBox.Show("Цвета сторон фишек не должны совпадать!", "Ошибка"); timer1.Enabled = false; }
+            else 
+            if (GetColor1() == GetColor2() && GetColor1() != Color.White) { MessageBox.Show("Цвета сторон фишек не должны совпадать!", "Ошибка"); timer1.Enabled = false; }
             else
             {
                 generationGameTable();
                 if (CheckWin() && moves == 0) // проверка на совпадение всех цветов при генерации игрового поля
                 {
-                    ClearDataGridView();
-                    generationGameTable();
+                    ClearDataGridView(); //очистка игрового поля
+                    generationGameTable(); //повторная генерация поля
                 }
                 else
                 {
-                    timer1.Enabled = true;
+                    timer1.Enabled = true; //начало работы таймера
                     dataGridView1.ClearSelection();
-                    comboBox1.Enabled = false;
-                    comboBox2.Enabled = false;
-                    start_game_button.Enabled = false;
+                    comboBox1.Enabled = false; //наложение ограничения на выбор первого цвета
+                    comboBox2.Enabled = false; //наложение ограничения на выбор первого цвета
+                    start_game_button.Enabled = false; //наложение ограничения на начало игры
                 }
             }
         }
@@ -53,11 +54,10 @@ namespace Переверни_фишки
         private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e) //метод для изменения цвета выбранной и соседним ей фишек и прибавления единицы к количеству ходов;
         {
             dataGridView1.ClearSelection();
-            FlipCellColor(e.RowIndex, e.ColumnIndex);
-            dataGridView1.ClearSelection();
-            moves++;
+            FlipCellColor(e.RowIndex, e.ColumnIndex); //переворачивание выбранной и соседних ей фишек
+            moves++; //увеличение количества ходов на единицу
             textBox1.Text = moves.ToString();
-            if (CheckWin())
+            if (CheckWin()) //проверка на победу
             {
                 timer1.Enabled = false;
                 MessageBox.Show("Вы выиграли!\nКоличество ходов: " + moves + "\nВремя прохождения игры: " + label1.Text, "Победа!");
@@ -65,13 +65,9 @@ namespace Переверни_фишки
             }
         }
         private void generationGameTable() //метод заполнения игрового поля фишками выбранных цветов
-        {
-            Color color1, color2;
-            color1 = GetColor1();
-            color2 = GetColor2();
+        {           
             dataGridView1.RowCount = 4; //количество строк
             dataGridView1.ColumnCount = 4; //количество столбцов
-            dataGridView1.ReadOnly = true;
             int[,] a = new int[4, 4]; //инициализация матрицы
             int i, j;
             //заполнение игрового поля фишками и вывод
@@ -79,80 +75,74 @@ namespace Переверни_фишки
             for (i = 0; i < dataGridView1.RowCount; i++)
                 for (j = 0; j < dataGridView1.ColumnCount; j++)
                 {
-                    dataGridView1.Columns[i].Width = 100;
-                    dataGridView1.Rows[i].Height = 100;
-                    a[i, j] = rand.Next(0, 2);
-                    if (a[i, j] == 0)
-                        dataGridView1.Rows[i].Cells[j].Style.BackColor = color1;
-                    else dataGridView1.Rows[i].Cells[j].Style.BackColor = color2;
-                    dataGridView1.Rows[i].Cells[j].Value = "";
+                    dataGridView1.Columns[i].Width = 100; // ширина ячеек
+                    dataGridView1.Rows[i].Height = 100; // высота ячеек
+                    a[i, j] = rand.Next(0, 2); // присваивание ячейкам единицы либо ноль
+                    if (a[i, j] == 0) // если у ячейки значение ноль, присваивается первый выбранный цвет, иначе присваивается второй цвет
+                        dataGridView1.Rows[i].Cells[j].Style.BackColor = GetColor1();
+                    else dataGridView1.Rows[i].Cells[j].Style.BackColor = GetColor2(); 
+                    dataGridView1.Rows[i].Cells[j].Value = ""; //очищение значения ячейки после окрашивания
                 }
         }
-        private void FlipCellColor(int row, int col) //метод проверки положения выбранной фишки и изменения её цвета;
+        private void FlipCellColor(int row, int col) //метод проверки положения выбранной фишки и изменения её цвета
         {
-            Color color1, color2;
-            color1 = GetColor1();
-            color2 = GetColor2();
-            if (dataGridView1.Rows[row].Cells[col].Style.BackColor == color1)
-                dataGridView1.Rows[row].Cells[col].Style.BackColor = color2;
-            else dataGridView1.Rows[row].Cells[col].Style.BackColor = color1;
-            // Проверка и переключение цветов соседних ячеек
+            if (dataGridView1.Rows[row].Cells[col].Style.BackColor == GetColor1()) //
+                dataGridView1.Rows[row].Cells[col].Style.BackColor = GetColor2();
+            else dataGridView1.Rows[row].Cells[col].Style.BackColor = GetColor1();
+            // Проверка и переворачивание соседних фишек
             if (row > 0) // Проверка верхней ячейки
-                if (dataGridView1.Rows[row - 1].Cells[col].Style.BackColor == color1)
-                    dataGridView1.Rows[row - 1].Cells[col].Style.BackColor = color2;
-                else dataGridView1.Rows[row - 1].Cells[col].Style.BackColor = color1;
+                if (dataGridView1.Rows[row - 1].Cells[col].Style.BackColor == GetColor1())
+                    dataGridView1.Rows[row - 1].Cells[col].Style.BackColor = GetColor2();
+                else dataGridView1.Rows[row - 1].Cells[col].Style.BackColor = GetColor1();
             if (row < 3) // Проверка нижней ячейки
-                if (dataGridView1.Rows[row + 1].Cells[col].Style.BackColor == color1)
-                    dataGridView1.Rows[row + 1].Cells[col].Style.BackColor = color2;
-                else dataGridView1.Rows[row + 1].Cells[col].Style.BackColor = color1;
+                if (dataGridView1.Rows[row + 1].Cells[col].Style.BackColor == GetColor1())
+                    dataGridView1.Rows[row + 1].Cells[col].Style.BackColor = GetColor2();
+                else dataGridView1.Rows[row + 1].Cells[col].Style.BackColor = GetColor1();
             if (col > 0) // Проверка левой ячейки
-                if (dataGridView1.Rows[row].Cells[col - 1].Style.BackColor == color1)
-                    dataGridView1.Rows[row].Cells[col - 1].Style.BackColor = color2;
-                else dataGridView1.Rows[row].Cells[col - 1].Style.BackColor = color1;
+                if (dataGridView1.Rows[row].Cells[col - 1].Style.BackColor == GetColor1())
+                    dataGridView1.Rows[row].Cells[col - 1].Style.BackColor = GetColor2();
+                else dataGridView1.Rows[row].Cells[col - 1].Style.BackColor = GetColor1();
             if (col < 3) // Проверка правой ячейки
-                if (dataGridView1.Rows[row].Cells[col + 1].Style.BackColor == color1)
-                    dataGridView1.Rows[row].Cells[col + 1].Style.BackColor = color2;
-                else dataGridView1.Rows[row].Cells[col + 1].Style.BackColor = color1;
+                if (dataGridView1.Rows[row].Cells[col + 1].Style.BackColor == GetColor1())
+                    dataGridView1.Rows[row].Cells[col + 1].Style.BackColor = GetColor2();
+                else dataGridView1.Rows[row].Cells[col + 1].Style.BackColor = GetColor1();
         }
 
         private bool CheckWin() //метод проверки цветов фишек на игровом поле
         {
             bool allColor1 = true;
             bool allColor2 = true;
-            Color color1, color2;
-            color1 = GetColor1();
-            color2 = GetColor2();
             for (int i = 0; i < dataGridView1.RowCount; i++)
                 for (int j = 0; j < dataGridView1.ColumnCount; j++)
                 {
-                    if (dataGridView1.Rows[i].Cells[j].Style.BackColor != color1) //проверка на несовпадение первого выбранного цвета и цветов всех фишек
+                    if (dataGridView1.Rows[i].Cells[j].Style.BackColor != GetColor1()) //проверка на несовпадение первого выбранного цвета и цветов всех фишек
                         allColor1 = false;
-                    if (dataGridView1.Rows[i].Cells[j].Style.BackColor != color2) //проверка на несовпадение первого выбранного цвета и цветов всех фишек
+                    if (dataGridView1.Rows[i].Cells[j].Style.BackColor != GetColor2()) //проверка на несовпадение первого выбранного цвета и цветов всех фишек
                         allColor2 = false;
                 }
             if (allColor1 || allColor2)
                 return true;
             else return false;
         }
-        private void ClearDataGridView() //метод очистки игрового поля;
+        private void ClearDataGridView() //метод очистки игрового поля
         {
             dataGridView1.Rows.Clear(); // Очищаем строки
             dataGridView1.Columns.Clear(); // Очищаем столбцы
         }
         private void resetAll() //метод сброса состояния игры
         {
-            comboBox1.Text = "";
-            comboBox2.Text = "";
-            comboBox1.Enabled = true;
-            comboBox2.Enabled = true;
-            timer1.Enabled = false;
-            label1.Text = "0 : 0";
-            textBox1.Text = "";
-            timeSecond = 0;
-            timeMinute = 0;
-            ClearDataGridView();
-            moves = 0;
-            start_game_button.Enabled = true;
+            comboBox1.Text = ""; //сброс первого цвета
+            comboBox2.Text = ""; //сброс второго цвета
+            comboBox1.Enabled = true; //снятие ограничения выбора первого цвета 
+            comboBox2.Enabled = true; //снятие ограничения выбора второго цвета
+            timer1.Enabled = false; //остановка работы таймера
+            label1.Text = "0 : 0"; //установка значения длительности игры в начальное положение
+            textBox1.Text = ""; //очистка поля, которое хранит количество ходов
+            timeSecond = 0; //сброс количества секунд
+            timeMinute = 0;//сброс количества минут
+            ClearDataGridView(); //очистка игрового поля
+            moves = 0; //обнуление счётчика ходов
+            start_game_button.Enabled = true; //снятие ограничения начала игры
         }
 
         private void dataGridView1_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
@@ -166,7 +156,7 @@ namespace Переверни_фишки
             if (timeSecond == 60) { timeSecond = 0; timeMinute++; }
             label1.Text = timeMinute.ToString() + " : " + timeSecond.ToString();
         }
-        private Color GetColor1()
+        private Color GetColor1() //метод получения цвета обратной стороны фишки
         {
             switch (comboBox1.SelectedItem.ToString())
             {
@@ -189,7 +179,7 @@ namespace Переверни_фишки
             }
         }
 
-        private Color GetColor2()
+        private Color GetColor2() //метод получения цвета обратной стороны фишки
         {
             switch (comboBox2.SelectedItem.ToString())
             {
